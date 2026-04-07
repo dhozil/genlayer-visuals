@@ -1,0 +1,373 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  .ep-wrap { font-family: 'Inter', sans-serif; padding: 1.5rem 0; max-width: 860px; margin: 0 auto; }
+
+  .ep-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 1.5rem; text-align: center; }
+
+  /* Mode selector */
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; justify-content: center; }
+
+  .mode-tab {
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid;
+    transition: all 0.2s;
+    background: transparent;
+  }
+
+  .mode-tab.active-strict { background: #EEF2FF; border-color: #818CF8; color: #4338CA; }
+  .mode-tab.active-comparative { background: #ECFDF5; border-color: #34D399; color: #065F46; }
+  .mode-tab.active-noncomp { background: #FFF7ED; border-color: #FB923C; color: #9A3412; }
+  .mode-tab:not([class*="active"]) { border-color: var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .mode-tab:not([class*="active"]):hover { border-color: var(--color-border-secondary); color: var(--color-text-primary); }
+
+  /* Panel */
+  .ep-panel { display: none; }
+  .ep-panel.show { display: block; }
+
+  /* Comparison grid */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+
+  .comp-col { border-radius: 10px; border: 1px solid; overflow: hidden; }
+
+  .comp-col-header { padding: 10px 14px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+  .comp-col-body { padding: 12px 14px; }
+
+  /* strict_eq colors */
+  .strict .comp-col-header { background: #EEF2FF; color: #4338CA; border-bottom: 1px solid #C7D2FE; }
+  .strict { border-color: #C7D2FE; }
+
+  /* comparative colors */
+  .comp-green .comp-col-header { background: #ECFDF5; color: #065F46; border-bottom: 1px solid #A7F3D0; }
+  .comp-green { border-color: #A7F3D0; }
+
+  /* non-comp colors */
+  .noncomp-col .comp-col-header { background: #FFF7ED; color: #9A3412; border-bottom: 1px solid #FED7AA; }
+  .noncomp-col { border-color: #FED7AA; }
+
+  /* Flow steps inside panel */
+  .mini-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+  .mini-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .mini-text { font-size: 12px; line-height: 1.5; color: var(--color-text-secondary); padding-top: 2px; }
+  .mini-text strong { color: var(--color-text-primary); }
+
+  .s-num { background: #EEF2FF; color: #4338CA; }
+  .c-num { background: #ECFDF5; color: #065F46; }
+  .n-num { background: #FFF7ED; color: #9A3412; }
+
+  /* Code snippet */
+  .code-block { background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: 6px; padding: 10px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; margin: 10px 0; line-height: 1.7; color: var(--color-text-primary); }
+
+  .kw { color: #7C3AED; font-weight: 500; }
+  .fn { color: #0284C7; }
+  .str { color: #059669; }
+  .cm { color: var(--color-text-tertiary); }
+
+  /* Verdict display */
+  .verdict-demo { margin: 10px 0; border-radius: 8px; padding: 12px 14px; border: 1px solid; }
+
+  .verdict-strict { background: #EEF2FF; border-color: #C7D2FE; }
+  .verdict-comp { background: #ECFDF5; border-color: #A7F3D0; }
+  .verdict-noncomp { background: #FFF7ED; border-color: #FED7AA; }
+
+  .verdict-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 11px; }
+  .verdict-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .v-check { background: #DCFCE7; color: #15803D; }
+  .v-cross { background: #FEE2E2; color: #DC2626; }
+  .verdict-label { color: var(--color-text-secondary); flex: 1; }
+  .verdict-result { font-weight: 600; font-size: 10px; }
+  .vr-pass { color: #15803D; }
+  .vr-fail { color: #DC2626; }
+
+  /* When to use */
+  .when-to-use { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .use-card { padding: 8px 10px; border-radius: 6px; border: 1px solid; font-size: 11px; }
+  .use-yes { background: #F0FDF4; border-color: #BBF7D0; color: #14532D; }
+  .use-no { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+  .use-label { font-weight: 600; font-size: 10px; margin-bottom: 4px; }
+
+  .summary-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .sum-card { border-radius: 8px; padding: 10px 12px; border: 1px solid; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .sum-card:hover { transform: translateY(-2px); }
+  .sum-strict { background: #EEF2FF; border-color: #C7D2FE; }
+  .sum-comp { background: #ECFDF5; border-color: #A7F3D0; }
+  .sum-noncomp { background: #FFF7ED; border-color: #FED7AA; }
+  .sum-title { font-size: 11px; font-weight: 600; margin-bottom: 3px; }
+  .sum-strict .sum-title { color: #4338CA; }
+  .sum-comp .sum-title { color: #065F46; }
+  .sum-noncomp .sum-title { color: #9A3412; }
+  .sum-sub { font-size: 10px; color: var(--color-text-tertiary); }
+  .sum-badge { font-size: 9px; padding: 1px 6px; border-radius: 999px; margin-top: 4px; display: inline-block; }
+  .b-fast { background: #DCFCE7; color: #14532D; }
+  .b-medium { background: #FEF9C3; color: #713F12; }
+  .b-slow { background: #FEE2E2; color: #991B1B; }
+
+  .hint { text-align: center; font-size: 11px; color: var(--color-text-tertiary); margin-top: 1rem; font-style: italic; }
+</style>
+
+<div class="ep-wrap">
+  <div class="ep-title">Equivalence Principle — How Validators Agree on Non-Deterministic Outputs</div>
+
+  <!-- Summary cards -->
+  <div class="summary-bar">
+    <div class="sum-card sum-strict" onclick="showPanel('strict')">
+      <div class="sum-title">strict_eq</div>
+      <div class="sum-sub">Byte-identical results</div>
+      <span class="sum-badge b-fast">⚡ Fastest</span>
+    </div>
+    <div class="sum-card sum-comp" onclick="showPanel('comparative')">
+      <div class="sum-title">prompt_comparative</div>
+      <div class="sum-sub">Semantic similarity check</div>
+      <span class="sum-badge b-medium">⏱ Medium</span>
+    </div>
+    <div class="sum-card sum-noncomp" onclick="showPanel('noncomp')">
+      <div class="sum-title">prompt_non_comparative</div>
+      <div class="sum-sub">Criteria-based evaluation</div>
+      <span class="sum-badge b-slow">🔍 Flexible</span>
+    </div>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active-strict" id="tab-strict" onclick="showPanel('strict')">strict_eq</button>
+    <button class="mode-tab" id="tab-comparative" onclick="showPanel('comparative')">prompt_comparative</button>
+    <button class="mode-tab" id="tab-noncomp" onclick="showPanel('noncomp')">prompt_non_comparative</button>
+  </div>
+
+  <!-- strict_eq panel -->
+  <div class="ep-panel show" id="panel-strict">
+    <div class="comp-grid">
+      <div class="comp-col strict">
+        <div class="comp-col-header">👑 Leader validator</div>
+        <div class="comp-col-body">
+          <div class="mini-step">
+            <div class="mini-num s-num">1</div>
+            <div class="mini-text">Executes the contract fully — LLM call, web fetch, or computation</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num s-num">2</div>
+            <div class="mini-text">Returns a tightly-constrained output: <strong>{"sentiment":"POSITIVE"}</strong></div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num s-num">3</div>
+            <div class="mini-text">Always uses <strong>json.dumps(result, sort_keys=True)</strong> to ensure consistent key ordering</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp-col strict">
+        <div class="comp-col-header">🔵 Other validators</div>
+        <div class="comp-col-body">
+          <div class="mini-step">
+            <div class="mini-num s-num">1</div>
+            <div class="mini-text">Re-execute the same contract independently</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num s-num">2</div>
+            <div class="mini-text">Compare their output with the Leader's <strong>byte-for-byte</strong></div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num s-num">3</div>
+            <div class="mini-text"><strong>Must match exactly</strong> — even one character difference = disagree</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="kw">def</span> <span class="fn">run</span>():
+    result = gl.nondet.exec_prompt(
+        <span class="str">'Classify as POSITIVE, NEGATIVE, or NEUTRAL. '</span>
+        <span class="str">f'Text: "{text}". Respond ONLY with JSON: {{"sentiment": "..."}}'</span>,
+        response_format=<span class="str">"json"</span>
+    )
+    <span class="kw">return</span> json.dumps(result, sort_keys=<span class="kw">True</span>)  <span class="cm"># sort_keys critical!</span>
+
+raw = gl.eq_principle.<span class="fn">strict_eq</span>(run)</div>
+
+    <div class="verdict-demo verdict-strict">
+      <div style="font-size:11px;font-weight:600;color:#4338CA;margin-bottom:6px">Consensus examples</div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-check">✓</div>
+        <div class="verdict-label">Leader: <code>{"sentiment":"POSITIVE"}</code> · Validator: <code>{"sentiment":"POSITIVE"}</code></div>
+        <div class="verdict-result vr-pass">AGREE</div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-cross">✗</div>
+        <div class="verdict-label">Leader: <code>{"sentiment":"POSITIVE"}</code> · Validator: <code>{"sentiment":"positive"}</code></div>
+        <div class="verdict-result vr-fail">DISAGREE</div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-cross">✗</div>
+        <div class="verdict-label">Leader: <code>{"sentiment":"POSITIVE"}</code> · Validator: <code>{"Sentiment":"POSITIVE"}</code></div>
+        <div class="verdict-result vr-fail">DISAGREE (key case)</div>
+      </div>
+    </div>
+
+    <div class="when-to-use">
+      <div class="use-card use-yes"><div class="use-label">✓ Use when</div>Output is constrained: yes/no, fixed enum, numeric value, sorted JSON</div>
+      <div class="use-card use-no"><div class="use-label">✗ Avoid when</div>Output is open-ended text, prices that drift, or creative content</div>
+    </div>
+  </div>
+
+  <!-- comparative panel -->
+  <div class="ep-panel" id="panel-comparative">
+    <div class="comp-grid">
+      <div class="comp-col comp-green">
+        <div class="comp-col-header">👑 Leader validator</div>
+        <div class="comp-col-body">
+          <div class="mini-step">
+            <div class="mini-num c-num">1</div>
+            <div class="mini-text">Generates an open-ended output: a summary, classification, or analysis</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num c-num">2</div>
+            <div class="mini-text">Output doesn't need to be constrained — natural language is fine</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp-col comp-green">
+        <div class="comp-col-header">🔵 Other validators</div>
+        <div class="comp-col-body">
+          <div class="mini-step">
+            <div class="mini-num c-num">1</div>
+            <div class="mini-text">Run the <strong>same contract</strong> and get their own output</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num c-num">2</div>
+            <div class="mini-text">Run a <strong>second LLM call</strong> to compare their output vs Leader's output</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num c-num">3</div>
+            <div class="mini-text">LLM decides: are these <strong>semantically equivalent</strong> based on the principle?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="kw">def</span> <span class="fn">run</span>():
+    <span class="kw">return</span> gl.nondet.exec_prompt(
+        <span class="str">'Summarize this in one sentence: '</span> + text
+    )
+
+result = gl.eq_principle.<span class="fn">prompt_comparative</span>(
+    run,
+    principle=<span class="str">"Summaries are equivalent if they convey the same main idea."</span>
+)</div>
+
+    <div class="verdict-demo verdict-comp">
+      <div style="font-size:11px;font-weight:600;color:#065F46;margin-bottom:6px">Consensus examples</div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-check">✓</div>
+        <div class="verdict-label">Leader: "Bitcoin is a decentralized currency" · Validator: "BTC operates without a central bank"</div>
+        <div class="verdict-result vr-pass">AGREE (same idea)</div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-cross">✗</div>
+        <div class="verdict-label">Leader: "Bitcoin is rising" · Validator: "Bitcoin is falling rapidly"</div>
+        <div class="verdict-result vr-fail">DISAGREE</div>
+      </div>
+    </div>
+
+    <div style="background:#FEF9C3;border:1px solid #FDE047;border-radius:6px;padding:8px 12px;font-size:11px;color:#713F12;margin-top:8px">
+      ⏱ <strong>Note:</strong> Each validator makes 2 LLM calls (execute + compare), adding ~6s latency vs strict_eq.
+    </div>
+
+    <div class="when-to-use">
+      <div class="use-card use-yes"><div class="use-label">✓ Use when</div>Output is text that can vary in wording but should convey the same meaning</div>
+      <div class="use-card use-no"><div class="use-label">✗ Avoid when</div>Output can be constrained to fixed schema — use strict_eq instead (faster)</div>
+    </div>
+  </div>
+
+  <!-- non-comparative panel -->
+  <div class="ep-panel" id="panel-noncomp">
+    <div class="comp-grid">
+      <div class="comp-col noncomp-col">
+        <div class="comp-col-header">👑 Leader validator</div>
+        <div class="comp-col-body">
+          <div class="mini-step">
+            <div class="mini-num n-num">1</div>
+            <div class="mini-text">Generates output — could be a summary, analysis, creative content</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num n-num">2</div>
+            <div class="mini-text">Output is evaluated against <strong>predefined criteria</strong>, not compared to others</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp-col noncomp-col">
+        <div class="comp-col-header">🔵 Other validators</div>
+        <div class="comp-col-body">
+          <div class="mini-step">
+            <div class="mini-num n-num">1</div>
+            <div class="mini-text"><strong>Do NOT re-execute</strong> the contract — no second LLM call needed</div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num n-num">2</div>
+            <div class="mini-text">Evaluate whether the Leader's output meets the <strong>criteria in the principle</strong></div>
+          </div>
+          <div class="mini-step">
+            <div class="mini-num n-num">3</div>
+            <div class="mini-text">Vote: does it satisfy accuracy, relevance, format requirements?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="kw">def</span> <span class="fn">run</span>():
+    <span class="kw">return</span> gl.nondet.exec_prompt(
+        <span class="str">'Write a one-paragraph summary of this article: '</span> + article
+    )
+
+result = gl.eq_principle.<span class="fn">prompt_non_comparative</span>(
+    run,
+    principle=<span class="str">"A valid summary: (1) accurately reflects main points, "</span>
+              <span class="str">"(2) is under 100 words, (3) uses neutral tone."</span>
+)</div>
+
+    <div class="verdict-demo verdict-noncomp">
+      <div style="font-size:11px;font-weight:600;color:#9A3412;margin-bottom:6px">Evaluation criteria check</div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-check">✓</div>
+        <div class="verdict-label">Accurately reflects main points of the article?</div>
+        <div class="verdict-result vr-pass">YES</div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-check">✓</div>
+        <div class="verdict-label">Under 100 words?</div>
+        <div class="verdict-result vr-pass">YES (87 words)</div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-icon v-check">✓</div>
+        <div class="verdict-label">Uses neutral tone?</div>
+        <div class="verdict-result vr-pass">YES</div>
+      </div>
+      <div style="margin-top:6px;font-size:10px;font-weight:600;color:#9A3412">→ Leader's output ACCEPTED</div>
+    </div>
+
+    <div class="when-to-use">
+      <div class="use-card use-yes"><div class="use-label">✓ Use when</div>Output is subjective/creative and validators should judge quality, not compare wording</div>
+      <div class="use-card use-no"><div class="use-label">✗ Avoid when</div>Criteria are vague — validators need clear, specific rules to evaluate against</div>
+    </div>
+  </div>
+
+  <div class="hint">Click the cards or tabs above to switch between equivalence types</div>
+</div>
+
+<script>
+function showPanel(name) {
+  ['strict','comparative','noncomp'].forEach(n => {
+    document.getElementById('panel-' + n).classList.remove('show');
+    const tab = document.getElementById('tab-' + n);
+    tab.className = 'mode-tab';
+  });
+  document.getElementById('panel-' + name).classList.add('show');
+  const tab = document.getElementById('tab-' + name);
+  if (name === 'strict') tab.className = 'mode-tab active-strict';
+  else if (name === 'comparative') tab.className = 'mode-tab active-comparative';
+  else tab.className = 'mode-tab active-noncomp';
+}
+</script>
